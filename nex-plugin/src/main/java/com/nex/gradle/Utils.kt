@@ -2,6 +2,7 @@ package com.nex.gradle
 
 import javassist.*
 import javassist.bytecode.AccessFlag
+import javassist.bytecode.ConstPool
 import java.io.File
 
 
@@ -76,3 +77,30 @@ fun CtClass.addDefaultConstructor() {
         )
     )
 }
+
+fun ConstPool.getMethodName(ref: Int): String? {
+    return try {
+        getMethodrefName(ref)
+    } catch (e: Throwable) {
+        null
+    }
+}
+
+//val codeAttribute = method.methodInfo2.codeAttribute
+//val iterator = codeAttribute.iterator()
+//println("----: ${method.name}")
+//while (iterator.hasNext()) {
+//    val currentPosition = iterator.next()
+//
+//    val cp = codeAttribute.constPool
+//    if (iterator.codeLength != currentPosition + 1) {
+//        val mref = ByteArray.readU16bit(iterator.get().code, currentPosition + 1)
+//
+//        if (cp.getMethodName(mref) == "setContentView") {
+//            val m = method.methodInfo.getLineNumber(currentPosition + 1)
+//            method.insertAt(m + 1, true, findFields())
+//
+//            break
+//        }
+//    }
+//}
