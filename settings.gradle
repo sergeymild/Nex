@@ -1,0 +1,2 @@
+include ':app', ':nex-library', ':nex-plugin'
+rootProject.name='Nex'
