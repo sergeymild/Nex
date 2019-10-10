@@ -1,7 +1,11 @@
 package com.nex.gradle
 
+import com.nex.Throttle
 import javassist.CtClass
+import javassist.CtField
 import javassist.CtMethod
+import javassist.NotFoundException
+import javassist.bytecode.AccessFlag
 
 class Memoizer(
     private val clazz: CtClass,
@@ -13,16 +17,19 @@ class Memoizer(
         if (method.returnType == CtClass.voidType)
             error("@Memoize may be placed only on method which return something. But in this case: ${clazz.simpleName}.${method.name} return void.")
 
+        if (method.hasAnnotation(Throttle::class.java))
+            error("@Memoize may placed on method which contains @Throttle")
+
         val cacheResultFieldName = buildCacheMethodResult(clazz, method)
 
         // set main check of return type
         var resultPreCondition =
-            "if (\$0.${cacheResultFieldName} != null) return \$0.${cacheResultFieldName};"
+            "if ($cacheResultFieldName != null) return $cacheResultFieldName;"
         var cacheParameters = ""
 
         // go through all method parameters, cache each and create check that if parameter is the same
         val withResultCheck = mutableListOf<String>()
-        withResultCheck.add("\$0.${cacheResultFieldName} != null")
+        withResultCheck.add("$cacheResultFieldName != null")
         for ((index, type) in method.parameterTypes.withIndex()) {
             // _$_methodName_index_parameterName
             val cacheName = "_\$_${method.name}_${index}_${type.name.replace(".", "_")}"
@@ -42,7 +49,7 @@ class Memoizer(
             resultPreCondition = withResultCheck.joinToString(
                 separator = " && ",
                 prefix = "if (",
-                postfix = ") return \$0.${cacheResultFieldName};"
+                postfix = ") return $cacheResultFieldName;"
             )
         }
 
@@ -53,8 +60,8 @@ class Memoizer(
 
         val insertAfter = """
                     $cacheParameters
-                    @0.${cacheResultFieldName} = @_;
-                    """.toJavassist()
+                    $cacheResultFieldName = ${'$'}_;
+                    """.trimIndent()
 
         println("\n")
         println("INSERT BEFORE METHOD: ${method.name}\n")
@@ -68,7 +75,22 @@ class Memoizer(
 
     private fun buildCacheMethodResult(clazz: CtClass, method: CtMethod): String {
         val cachedName = "_\$_cached${method.name.capitalize()}"
-        clazz.replaceField(method.returnType, cachedName)
-        return cachedName
+        var isStatic = false
+
+        try {
+            clazz.getDeclaredField(cachedName)
+        } catch (e: NotFoundException) {
+            if ((method.methodInfo2.accessFlags and AccessFlag.STATIC) != 0) {
+                isStatic = true
+                val newField = CtField.make("public static ${method.returnType.name} $cachedName;", clazz)
+                clazz.addField(newField)
+            } else {
+                isStatic = false
+                val newField = CtField.make("public ${method.returnType.name} $cachedName;", clazz)
+                clazz.addField(newField)
+            }
+        }
+
+        return "${if (isStatic) "" else "$0."}$cachedName"
     }
 }

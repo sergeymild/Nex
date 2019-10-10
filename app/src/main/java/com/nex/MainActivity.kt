@@ -3,13 +3,10 @@ package com.nex
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 
+val staticCacheField: String
+    @Memoize get() = "someValueFromStatic"
+
 class MainActivity : AppCompatActivity() {
-
-
-    @Memoize
-    fun me(): String {
-        return "ds"
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
