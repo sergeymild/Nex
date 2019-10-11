@@ -104,3 +104,27 @@ fun ConstPool.getMethodName(ref: Int): String? {
 //        }
 //    }
 //}
+
+
+//        if (jarInput.file.absolutePath.contains("sqlite-framework-2.0.0")) {
+//            val ctc = pool.get("androidx.sqlite.db.framework.FrameworkSQLiteStatement")
+//            ctc.getDeclaredMethod("executeInsert").insertBefore("""
+//                com.nex.Checker.check(mDelegate);
+//            """.trimIndent())
+//            val toBytecode = ctc.toBytecode()
+//            val input = JarFile(jarInput.file)
+//            val output = JarOutputStream(FileOutputStream(destFolder))
+//            for (entry in input.entries()) {
+//                if (entry.name != "androidx/sqlite/db/framework/FrameworkSQLiteStatement.class") {
+//                    val s = input.getInputStream(entry)
+//                    output.putNextEntry(JarEntry(entry.name))
+//                    IOUtils.copy(s, output)
+//                    s.close()
+//                }
+//            }
+//
+//            output.putNextEntry(JarEntry("androidx/sqlite/db/framework/FrameworkSQLiteStatement.class"))
+//            output.write(toBytecode)
+//            output.close()
+//        } else {
+//        }
