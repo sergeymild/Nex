@@ -35,7 +35,10 @@ class NexTransformer(private val project: Project) : Transform() {
             fillPoolAndroidInputs(pool)
             fillPoolReferencedInputs(transformInvocation, pool)
             fillPoolInputs(transformInvocation, pool)
-            transformInvocation.outputProvider.deleteAll()
+
+            if (!transformInvocation.isIncremental) {
+                transformInvocation.outputProvider.deleteAll()
+            }
 
             transformInvocation.inputs.forEach { transformInput ->
                 transformInput.directoryInputs.forEach { directoryInput ->
@@ -104,8 +107,13 @@ class NexTransformer(private val project: Project) : Transform() {
 
         if (transformInvocation.isIncremental) {
             for (entry in inputDirectory.changedFiles) {
+                println("--> ${entry.value}: ${entry.key.name}")
+                if (entry.value == Status.NOTCHANGED) {
+                    entry.key.relativeTo(inputDirectory.file).copyTo(File("${destFolder.absolutePath}/${entry.key.name}"))
+                    continue
+                }
                 if (entry.value == Status.REMOVED) {
-                    FileUtils.deleteQuietly(entry.key)
+                    FileUtils.deleteQuietly(entry.key.relativeTo(inputDirectory.file))
                     continue
                 }
 
