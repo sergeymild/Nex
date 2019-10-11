@@ -133,7 +133,6 @@ class NexTransformer(private val project: Project) : Transform() {
             val clazz = pool.get(classname)
 
             if (!shouldSkipProcess(it)) {
-                println("   ${it.name}")
                 transformClass(clazz, pool, destFolder.absolutePath)
             }
 

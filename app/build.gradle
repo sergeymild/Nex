@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'nex-plugin'
+//apply plugin: 'nex-plugin'
 
 android {
     compileSdkVersion 29
