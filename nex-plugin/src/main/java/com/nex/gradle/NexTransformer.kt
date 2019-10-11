@@ -104,7 +104,11 @@ class NexTransformer(private val project: Project) : Transform() {
 
         if (transformInvocation.isIncremental) {
             for (entry in inputDirectory.changedFiles) {
-                if (entry.value != Status.CHANGED && entry.value != Status.ADDED) continue
+                if (entry.value == Status.REMOVED) {
+                    FileUtils.deleteQuietly(entry.key)
+                    continue
+                }
+
                 if (entry.key.isFile) {
                     processInputFile(entry.key, inputDirectory, pool, destFolder)
                     continue
