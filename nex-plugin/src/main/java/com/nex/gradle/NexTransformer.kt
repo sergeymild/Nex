@@ -21,7 +21,7 @@ class NexTransformer(private val project: Project) : Transform() {
 
     override fun getName(): String = NexTransformer::class.java.simpleName
     override fun getInputTypes(): Set<QualifiedContent.ContentType> = TransformManager.CONTENT_CLASS
-    override fun isIncremental(): Boolean = false
+    override fun isIncremental(): Boolean = true
     override fun getScopes(): MutableSet<in QualifiedContent.Scope> =
         TransformManager.PROJECT_ONLY
 
@@ -35,8 +35,10 @@ class NexTransformer(private val project: Project) : Transform() {
             fillPoolAndroidInputs(pool)
             fillPoolReferencedInputs(transformInvocation, pool)
             fillPoolInputs(transformInvocation, pool)
-            transformInvocation.outputProvider.deleteAll()
 
+            if (!transformInvocation.isIncremental) {
+                transformInvocation.outputProvider.deleteAll()
+            }
 
             transformInvocation.inputs.forEach { transformInput ->
                 transformInput.directoryInputs.forEach { directoryInput ->
@@ -103,19 +105,51 @@ class NexTransformer(private val project: Project) : Transform() {
             Format.DIRECTORY
         )
 
-        inputDirectory.file.walkTopDown().forEach { originalClassFile ->
-            if (originalClassFile.isClassfile()) {
-                val classname = originalClassFile.relativeTo(inputDirectory.file).toClassname()
-                val clazz = pool.get(classname)
-
-                if (!shouldSkipProcess(originalClassFile)) {
-                    transformClass(clazz, pool, destFolder.absolutePath)
+        if (transformInvocation.isIncremental) {
+            for (entry in inputDirectory.changedFiles) {
+                println("--> ${entry.value}: ${entry.key.name}")
+                if (entry.value == Status.NOTCHANGED) {
+                    entry.key.relativeTo(inputDirectory.file).copyTo(File("${destFolder.absolutePath}/${entry.key.name}"))
+                    continue
+                }
+                if (entry.value == Status.REMOVED) {
+                    FileUtils.deleteQuietly(entry.key.relativeTo(inputDirectory.file))
+                    continue
                 }
 
-                clazz.writeFile(destFolder.absolutePath)
+                if (entry.key.isFile) {
+                    processInputFile(entry.key, inputDirectory, pool, destFolder)
+                    continue
+                }
+                entry.key.walkTopDown().forEach {
+                    processInputFile(it, inputDirectory, pool, destFolder)
+                }
             }
+            return
         }
 
+        inputDirectory.file.walkTopDown().forEach {
+            processInputFile(it, inputDirectory, pool, destFolder)
+        }
+
+    }
+
+    private fun processInputFile(
+        it: File,
+        inputDirectory: DirectoryInput,
+        pool: ClassPool,
+        destFolder: File
+    ) {
+        if (it.isClassfile()) {
+            val classname = it.relativeTo(inputDirectory.file).toClassname()
+            val clazz = pool.get(classname)
+
+            if (!shouldSkipProcess(it)) {
+                transformClass(clazz, pool, destFolder.absolutePath)
+            }
+
+            clazz.writeFile(destFolder.absolutePath)
+        }
     }
 
     private fun transformClass(
