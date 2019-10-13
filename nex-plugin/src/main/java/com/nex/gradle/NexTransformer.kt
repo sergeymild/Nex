@@ -4,6 +4,7 @@ import com.android.build.api.transform.*
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.pipeline.TransformManager
 import com.nex.Debounce
+import com.nex.Lazy
 import com.nex.Memoize
 import com.nex.Throttle
 import javassist.ClassPool
@@ -164,6 +165,10 @@ class NexTransformer(private val project: Project) : Transform() {
 
             if (method.hasAnnotation(Memoize::class.java.canonicalName)) {
                 Memoizer(clazz, method).memoize()
+            }
+
+            if (method.hasAnnotation(Lazy::class.java.canonicalName)) {
+                Lazier(clazz, method).lazy()
             }
 
             if (method.hasAnnotation(Throttle::class.java.canonicalName)) {

@@ -1,6 +1,7 @@
 package com.nex.gradle
 
 import com.nex.Lazy
+import com.nex.Memoize
 import com.nex.Throttle
 import javassist.CtClass
 import javassist.CtField
@@ -8,52 +9,25 @@ import javassist.CtMethod
 import javassist.NotFoundException
 import javassist.bytecode.AccessFlag
 
-class Memoizer(
+class Lazier(
     private val clazz: CtClass,
     private val method: CtMethod
 ) {
 
-    fun memoize() {
+    fun lazy() {
 
         if (method.returnType == CtClass.voidType)
-            error("@Memoize may be placed only on method which return something. But in this case: ${clazz.simpleName}.${method.name} return void.")
+            error("@Lazy may be placed only on method which return something. But in this case: ${clazz.simpleName}.${method.name} return void.")
 
         if (method.hasAnnotation(Throttle::class.java))
-            error("@Memoize may placed on method which contains @Throttle")
-        if (method.hasAnnotation(Lazy::class.java))
-            error("@Memoize may placed on method which contains @Lazy")
+            error("@Lazy may placed on method which contains @Throttle")
+        if (method.hasAnnotation(Memoize::class.java))
+            error("@Lazy may placed on method which contains @Memoize")
 
         val cacheResultFieldName = buildCacheMethodResult(clazz, method)
 
         // set main check of return type
-        var resultPreCondition = checkFieldOnEmpty(cacheResultFieldName, method)
-        var cacheParameters = ""
-
-        // go through all method parameters, cache each and create check that if parameter is the same
-        val withResultCheck = mutableListOf<String>()
-        withResultCheck.add("$cacheResultFieldName != null")
-        for ((index, type) in method.parameterTypes.withIndex()) {
-            // _$_methodName_index_parameterName
-            val cacheName = "_\$_${method.name}_${index}_${type.name.replace(".", "_")}"
-            clazz.replaceField(type, cacheName)
-
-            // parameterName != _$_methodName_index_parameterName
-            val checks = if (type.isPrimitive) "\$${index + 1} == \$0.$cacheName"
-            // (parameterName != null && parameterName.equals(_$_methodName_index_parameterName))
-            else "(\$${index + 1} != null && \$${index + 1}.equals(\$0.$cacheName))"
-
-            cacheParameters += "\$0.$cacheName = \$${index + 1};\n"
-
-            withResultCheck.add(checks)
-        }
-
-        if (method.parameterTypes.isNotEmpty()) {
-            resultPreCondition = withResultCheck.joinToString(
-                separator = " && ",
-                prefix = "if (",
-                postfix = ") return $cacheResultFieldName;"
-            )
-        }
+        val resultPreCondition = checkFieldOnEmpty(cacheResultFieldName, method)
 
         val insertBefore = """
                     $resultPreCondition
@@ -61,7 +35,6 @@ class Memoizer(
                 """.trimIndent()
 
         val insertAfter = """
-                    $cacheParameters
                     $cacheResultFieldName = ${'$'}_;
                     """.trimIndent()
 

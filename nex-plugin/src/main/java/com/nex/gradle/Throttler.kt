@@ -19,6 +19,8 @@ class Throttler(
             error("@${Throttle::class.java.simpleName} may be placed only on method which return void. But in this case: ${clazz.simpleName}.${method.name} return ${method.returnType.simpleName}.")
         if (method.hasAnnotation(Memoizer::class.java))
             error("@Throttle may placed on method which contains @Memoize")
+        if (method.hasAnnotation(Lazy::class.java))
+            error("@Throttle may placed on method which contains @Lazy")
 
         val cacheResultFieldName = buildCacheLastTimeMethodCalled(clazz, method)
 
