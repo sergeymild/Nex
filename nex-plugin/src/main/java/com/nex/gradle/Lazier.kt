@@ -31,7 +31,7 @@ class Lazier(
 
         val insertBefore = """
                     $resultPreCondition
-                    System.out.println("@Memoize: ${clazz.simpleName}.${method.name}");
+                    System.out.println("@Lazy: ${clazz.simpleName}.${method.name}");
                 """.trimIndent()
 
         val insertAfter = """
@@ -39,7 +39,7 @@ class Lazier(
                     """.trimIndent()
 
         println("\n")
-        println("typeOfField: ${method.returnType.name}")
+        println("-----> Lazy")
         println("INSERT BEFORE METHOD: ${method.name}\n")
         println(insertBefore.trimIndent().trimStart().trimEnd())
         println("INSERT AFTER METHOD: ${method.name}\n")
