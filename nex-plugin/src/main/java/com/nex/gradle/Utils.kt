@@ -36,6 +36,12 @@ inline fun <T> Array<out T>.indicesToString(separator: String = ",", crossinline
     }.joinToString(separator)
 }
 
+inline fun <T> List<T>.indicesToString(separator: String = ",", crossinline transform: (index: Int) -> String): String {
+    return mapIndexed { index, _ ->
+        transform(index)
+    }.joinToString(separator)
+}
+
 inline fun CtClass.newMethod(
     name: String,
     returnType: CtClass = CtClass.voidType,

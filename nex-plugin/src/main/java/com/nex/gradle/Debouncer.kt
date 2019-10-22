@@ -65,7 +65,7 @@ class Debouncer(
                 $0._super.${originalMethod.name}(${originalMethod.parameterTypes.indicesToString { "\$0._${it + 1}" }});
                 $0._super.$debounceField = null;
                 $0._super = null;
-                ${originalMethod.parameterTypes.indicesToString("\n") { "\$0._${it + 1} = null;" }}
+                ${originalMethod.parameterTypes.filter { !it.isPrimitive }.indicesToString("\n") { "\$0._${it + 1} = null;" }}
             }""".trimIndent()
         }
 
