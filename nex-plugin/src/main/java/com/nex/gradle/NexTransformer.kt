@@ -3,10 +3,7 @@ package com.nex.gradle
 import com.android.build.api.transform.*
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.pipeline.TransformManager
-import com.nex.Debounce
-import com.nex.Lazy
-import com.nex.Memoize
-import com.nex.Throttle
+import com.nex.*
 import javassist.ClassPool
 import javassist.CtClass
 import org.apache.commons.io.FileUtils
@@ -173,6 +170,10 @@ class NexTransformer(private val project: Project) : Transform() {
 
             if (method.hasAnnotation(Throttle::class.java.canonicalName)) {
                 Throttler(clazz, method).throttle()
+            }
+
+            if (method.hasAnnotation(Filter::class.java.canonicalName)) {
+                Filterier(clazz, method).filter()
             }
 
             if (method.hasAnnotation(Debounce::class.java.canonicalName)) {

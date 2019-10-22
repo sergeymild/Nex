@@ -16,7 +16,7 @@ class Throttler(
 
     fun throttle() {
         if (method.returnType != CtClass.voidType)
-            error("@${Throttle::class.java.simpleName} may be placed only on method which return void. But in this case: ${clazz.simpleName}.${method.name} return ${method.returnType.simpleName}.")
+            error("@Throttle may be placed only on method which return void. But in this case: ${clazz.simpleName}.${method.name} return ${method.returnType.simpleName}.")
         if (method.hasAnnotation(Memoizer::class.java))
             error("@Throttle may placed on method which contains @Memoize")
         if (method.hasAnnotation(Lazy::class.java))
