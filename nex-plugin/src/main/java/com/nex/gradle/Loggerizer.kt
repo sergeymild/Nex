@@ -25,11 +25,12 @@ class Loggerizer(
             val insertAfter = """
                     android.util.Log.i("Nex:[${clazz.simpleName}]", "⇠ ${method.name}${if (!hasReturnType) "" else " [\"+@_+\"] "}");                    
                 """.trimIndent().toJavassist()
-
-            println(insertAfter)
             method.insertAfter(insertAfter)
         }
 
+        println("\n")
+        println("typeOfField: ${method.returnType.name}")
+        println("INSERT BEFORE METHOD: ${method.name}\n")
         method.insertBefore(insertBefore)
     }
 
