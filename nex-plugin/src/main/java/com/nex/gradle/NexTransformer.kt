@@ -158,7 +158,7 @@ class NexTransformer(private val project: Project) : Transform() {
 
 
         for (method in clazz.declaredMethods) {
-            if (method.hasAnnotation(Logger::class.java.canonicalName)) {
+            if (method.hasAnnotation(Log::class.java.canonicalName)) {
                 Loggerizer(clazz, method).loggerize()
             }
             if (method.isEmpty) continue

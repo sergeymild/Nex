@@ -10,4 +10,4 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target({ METHOD })
 @Retention(RUNTIME)
 @Documented
-public @interface Logger { }
+public @interface Log { }
