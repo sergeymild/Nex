@@ -69,11 +69,11 @@ class Debouncer(
             }""".trimIndent()
         }
 
-        println(runMethod)
+        //println(runMethod)
 
         runnableClass.addMethod(runMethod)
         runnableClass.writeFile(destFolder)
-        println("GENERATED: ${destFolder}/${runnableClass.name}")
+        //println("GENERATED: ${destFolder}/${runnableClass.name}")
     }
 
     private fun getDebounceTimeFromAnnotation(): Long {

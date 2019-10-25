@@ -38,13 +38,13 @@ class Lazier(
                     $cacheResultFieldName = ${'$'}_;
                     """.trimIndent()
 
-        println("\n")
-        println("-----> Lazy")
-        println("INSERT BEFORE METHOD: ${method.name}\n")
-        println(insertBefore.trimIndent().trimStart().trimEnd())
-        println("INSERT AFTER METHOD: ${method.name}\n")
-        println(insertAfter.trimIndent().trimMargin())
-        println("\n")
+//        println("\n")
+//        println("-----> Lazy")
+//        println("INSERT BEFORE METHOD: ${method.name}\n")
+//        println(insertBefore.trimIndent().trimStart().trimEnd())
+//        println("INSERT AFTER METHOD: ${method.name}\n")
+//        println(insertAfter.trimIndent().trimMargin())
+//        println("\n")
         method.insertBefore(insertBefore)
         method.insertAfter(insertAfter)
     }

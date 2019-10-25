@@ -65,13 +65,13 @@ class Memoizer(
                     $cacheResultFieldName = ${'$'}_;
                     """.trimIndent()
 
-        println("\n")
-        println("typeOfField: ${method.returnType.name}")
-        println("INSERT BEFORE METHOD: ${method.name}\n")
-        println(insertBefore.trimIndent().trimStart().trimEnd())
-        println("INSERT AFTER METHOD: ${method.name}\n")
-        println(insertAfter.trimIndent().trimMargin())
-        println("\n")
+//        println("\n")
+//        println("typeOfField: ${method.returnType.name}")
+//        println("INSERT BEFORE METHOD: ${method.name}\n")
+//        println(insertBefore.trimIndent().trimStart().trimEnd())
+//        println("INSERT AFTER METHOD: ${method.name}\n")
+//        println(insertAfter.trimIndent().trimMargin())
+//        println("\n")
         method.insertBefore(insertBefore)
         method.insertAfter(insertAfter)
     }

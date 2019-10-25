@@ -158,6 +158,10 @@ class NexTransformer(private val project: Project) : Transform() {
 
 
         for (method in clazz.declaredMethods) {
+            if (clazz.simpleName == "MainActivity" && method.name == "onCreate") {
+                println("============== ")
+                println(method.annotations.joinToString { it.toString() })
+            }
             if (method.hasAnnotation(Log::class.java.canonicalName)) {
                 Loggerizer(clazz, method).loggerize()
             }
