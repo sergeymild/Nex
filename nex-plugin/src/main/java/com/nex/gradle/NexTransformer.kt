@@ -158,6 +158,9 @@ class NexTransformer(private val project: Project) : Transform() {
 
 
         for (method in clazz.declaredMethods) {
+            if (method.hasAnnotation(Logger::class.java.canonicalName)) {
+                Loggerizer(clazz, method).loggerize()
+            }
             if (method.isEmpty) continue
 
             if (method.hasAnnotation(Memoize::class.java.canonicalName)) {
@@ -179,10 +182,6 @@ class NexTransformer(private val project: Project) : Transform() {
                     clazz,
                     method
                 ).debounce()
-            }
-
-            if (method.hasAnnotation(Logger::class.java.canonicalName)) {
-                Loggerizer(clazz, method).loggerize()
             }
         }
     }
