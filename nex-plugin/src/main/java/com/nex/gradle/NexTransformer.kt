@@ -172,10 +172,6 @@ class NexTransformer(private val project: Project) : Transform() {
                 Throttler(clazz, method).throttle()
             }
 
-            if (method.hasAnnotation(Filter::class.java.canonicalName)) {
-                Filterier(clazz, method).filter()
-            }
-
             if (method.hasAnnotation(Debounce::class.java.canonicalName)) {
                 Debouncer(
                     destFolder,
@@ -183,6 +179,10 @@ class NexTransformer(private val project: Project) : Transform() {
                     clazz,
                     method
                 ).debounce()
+            }
+
+            if (method.hasAnnotation(Logger::class.java.canonicalName)) {
+                Loggerizer(clazz, method).loggerize()
             }
         }
     }

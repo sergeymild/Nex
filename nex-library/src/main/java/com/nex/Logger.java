@@ -10,6 +10,4 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target({ METHOD })
 @Retention(RUNTIME)
 @Documented
-public @interface Filter {
-    int parameterIndex() default -1;
-}
+public @interface Logger { }
