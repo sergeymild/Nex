@@ -1,7 +1,10 @@
 package com.nex.gradle
 
 import com.nex.Debounce
-import javassist.*
+import javassist.ClassPool
+import javassist.CtClass
+import javassist.CtMethod
+import javassist.CtNewMethod
 
 
 /**
@@ -19,9 +22,9 @@ class Debouncer(
             error("@${Debounce::class.java.simpleName} may be placed only on method which return void. But in this case: ${clazz.simpleName}.${method.name} return ${method.returnType.simpleName}.")
 
         //val runnableMethodCall = buildCacheRunnableMethodCall()
-        val handler = buildHandlerField()
+        val handler = clazz.addAndroidHandlerField()
 
-        val runnableClass = clazz.makeNestedClass("RunnableDebounce${method.name.capitalize()}", true)
+        val runnableClass = clazz.makeNestedClass("Debounce${method.name.capitalize()}Runnable", true)
         runnableClass.addInterface(pool.get("java.lang.Runnable"))
 
         val debounceField = "_\$_runnableMethodCall${method.name.capitalize()}"
@@ -69,25 +72,13 @@ class Debouncer(
             }""".trimIndent()
         }
 
-        //println(runMethod)
-
         runnableClass.addMethod(runMethod)
         runnableClass.writeFile(destFolder)
-        //println("GENERATED: ${destFolder}/${runnableClass.name}")
+        println("GENERATED: ${destFolder}/${runnableClass.name}")
     }
 
     private fun getDebounceTimeFromAnnotation(): Long {
         val annotation = method.getAnnotation(Debounce::class.java) as Debounce
         return annotation.value
-    }
-
-    private fun buildHandlerField(): String {
-        val cachedName = "_androidHandler"
-        val newField = CtField.make(
-            "private android.os.Handler $cachedName = new android.os.Handler(android.os.Looper.getMainLooper());",
-            clazz
-        )
-        clazz.addField(newField)
-        return cachedName
     }
 }

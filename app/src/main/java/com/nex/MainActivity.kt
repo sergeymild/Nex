@@ -8,20 +8,18 @@ import java.lang.StringBuilder
 
 
 class MainActivity : AppCompatActivity() {
+    @Debounce(1000)
+    fun debo(param: String) {
 
-    fun som(index: Int, url: String?) {
-        println(index)
-        println(url)
-        println("-")
     }
 
 
-    @Logger
-    fun subscriber(string: String?, second: Int): String {
-        return "$string + $second"
+    @Repeat(every = 2000)
+    fun repeatedMethod(isActive: Boolean) {
+        System.out.println()
+        println("repeat eventy ${System.currentTimeMillis()}")
     }
 
-    @Logger
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -30,7 +28,9 @@ class MainActivity : AppCompatActivity() {
         var index = 0
         var url: String? = "http"
         findViewById<View>(R.id.button).setOnClickListener {
-            subscriber("some awesome parameter", 20)
+            println(index)
+            repeatedMethod(index % 2 == 0)
+            index += 1
         }
     }
 }

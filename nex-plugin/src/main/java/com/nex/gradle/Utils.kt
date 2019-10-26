@@ -112,6 +112,26 @@ fun defaultValue(method: CtMethod): String {
     }
 }
 
+fun CtClass.addAndroidHandlerField(): String {
+    val cachedName = "_androidHandler"
+    try {
+        getField(cachedName)
+    } catch (e: NotFoundException) {
+        val newField = CtField.make(
+            "private android.os.Handler $cachedName = new android.os.Handler(android.os.Looper.getMainLooper());",
+            this
+        )
+        this.addField(newField)
+    }
+
+    return cachedName
+}
+
+fun <T> CtMethod.annotation(type: Class<T>) : T {
+    return getAnnotation(type) as T
+}
+
+
 //val codeAttribute = method.methodInfo2.codeAttribute
 //val iterator = codeAttribute.iterator()
 //println("----: ${method.name}")

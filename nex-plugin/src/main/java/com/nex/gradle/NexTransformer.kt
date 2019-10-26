@@ -107,7 +107,8 @@ class NexTransformer(private val project: Project) : Transform() {
             for (entry in inputDirectory.changedFiles) {
                 println("--> ${entry.value}: ${entry.key.name}")
                 if (entry.value == Status.NOTCHANGED) {
-                    entry.key.relativeTo(inputDirectory.file).copyTo(File("${destFolder.absolutePath}/${entry.key.name}"))
+                    entry.key.relativeTo(inputDirectory.file)
+                        .copyTo(File("${destFolder.absolutePath}/${entry.key.name}"))
                     continue
                 }
                 if (entry.value == Status.REMOVED) {
@@ -158,34 +159,34 @@ class NexTransformer(private val project: Project) : Transform() {
 
 
         for (method in clazz.declaredMethods) {
-            if (clazz.simpleName == "MainActivity" && method.name == "onCreate") {
-                println("============== ")
-                println(method.annotations.joinToString { it.toString() })
-            }
             if (method.hasAnnotation(Log::class.java.canonicalName)) {
                 Loggerizer(clazz, method).loggerize()
             }
             if (method.isEmpty) continue
 
             if (method.hasAnnotation(Memoize::class.java.canonicalName)) {
+                println("Nex: memoize: ${clazz.simpleName}.${method.name}")
                 Memoizer(clazz, method).memoize()
             }
 
             if (method.hasAnnotation(Lazy::class.java.canonicalName)) {
+                println("Nex: lazy: ${clazz.simpleName}.${method.name}")
                 Lazier(clazz, method).lazy()
             }
 
             if (method.hasAnnotation(Throttle::class.java.canonicalName)) {
+                println("Nex: throttle: ${clazz.simpleName}.${method.name}")
                 Throttler(clazz, method).throttle()
             }
 
+            if (method.hasAnnotation(Repeat::class.java.canonicalName)) {
+                println("Nex: repeat: ${clazz.simpleName}.${method.name}")
+                Repeater(destFolder, pool, clazz, method).repeat()
+            }
+
             if (method.hasAnnotation(Debounce::class.java.canonicalName)) {
-                Debouncer(
-                    destFolder,
-                    pool,
-                    clazz,
-                    method
-                ).debounce()
+                println("Nex: debounce: ${clazz.simpleName}.${method.name}")
+                Debouncer(destFolder, pool, clazz, method).debounce()
             }
         }
     }
