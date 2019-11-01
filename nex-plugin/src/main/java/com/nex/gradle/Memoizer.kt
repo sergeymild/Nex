@@ -14,24 +14,22 @@ class Memoizer(
 ) {
 
     fun memoize() {
-
-        if (method.returnType == CtClass.voidType)
-            error("@Memoize may be placed only on method which return something. But in this case: ${clazz.simpleName}.${method.name} return void.")
-
+        if (method.parameterTypes.isEmpty())
+            error("@Memoize ${clazz.simpleName}.${method.name} method must contains parameters")
         if (method.hasAnnotation(Throttle::class.java))
-            error("@Memoize may placed on method which contains @Throttle")
+            error("@Memoize ${clazz.simpleName}.${method.name} has placed on method which contains @Throttle")
         if (method.hasAnnotation(Lazy::class.java))
-            error("@Memoize may placed on method which contains @Lazy")
+            error("@Memoize ${clazz.simpleName}.${method.name} has placed on method which contains @Lazy")
 
         val cacheResultFieldName = buildCacheMethodResult(clazz, method)
 
         // set main check of return type
-        var resultPreCondition = checkFieldOnEmpty(cacheResultFieldName, method)
+        //var resultPreCondition = checkFieldOnEmpty(cacheResultFieldName, method)
         var cacheParameters = ""
 
         // go through all method parameters, cache each and create check that if parameter is the same
         val withResultCheck = mutableListOf<String>()
-        withResultCheck.add("$cacheResultFieldName != null")
+        cacheResultFieldName?.let { withResultCheck.add("$it != null") }
         for ((index, type) in method.parameterTypes.withIndex()) {
             // _$_methodName_index_parameterName
             val cacheName = "_\$_${method.name}_${index}_${type.name.replace(".", "_")}"
@@ -47,12 +45,13 @@ class Memoizer(
             withResultCheck.add(checks)
         }
 
-        if (method.parameterTypes.isNotEmpty()) {
-            resultPreCondition = withResultCheck.joinToString(
-                separator = " && ",
-                prefix = "if (",
-                postfix = ") return $cacheResultFieldName;"
-            )
+        var resultPreCondition = withResultCheck.joinToString(
+            separator = " && ",
+            prefix = "if (",
+            postfix = ") return;"
+        )
+        if (method.returnType != CtClass.voidType) {
+            resultPreCondition = resultPreCondition.replace("return;", " return $cacheResultFieldName;")
         }
 
         val insertBefore = """
@@ -62,26 +61,28 @@ class Memoizer(
 
         val insertAfter = """
                     $cacheParameters
-                    $cacheResultFieldName = ${'$'}_;
+                    ${if (cacheResultFieldName != null) "$cacheResultFieldName = \$_;" else ""}
                     """.trimIndent()
 
-//        println("\n")
-//        println("typeOfField: ${method.returnType.name}")
-//        println("INSERT BEFORE METHOD: ${method.name}\n")
-//        println(insertBefore.trimIndent().trimStart().trimEnd())
-//        println("INSERT AFTER METHOD: ${method.name}\n")
-//        println(insertAfter.trimIndent().trimMargin())
-//        println("\n")
+        println("\n")
+        println("typeOfField: ${method.returnType.name}")
+        println("INSERT BEFORE METHOD: ${method.name}\n")
+        println(insertBefore.trimIndent().trimStart().trimEnd())
+        println("INSERT AFTER METHOD: ${method.name}\n")
+        println(insertAfter.trimIndent().trimMargin())
+        println("\n")
         method.insertBefore(insertBefore)
         method.insertAfter(insertAfter)
     }
 
-    private fun checkFieldOnEmpty(fieldName: String, method: CtMethod): String {
+    private fun checkFieldOnEmpty(fieldName: String?, method: CtMethod): String? {
+        if (method.returnType == CtClass.voidType) return null
         if (!method.returnType.isPrimitive) return "if ($fieldName != null) return $fieldName;"
         return "if ($fieldName != ${defaultValue(method)}) return $fieldName;"
     }
 
-    private fun buildCacheMethodResult(clazz: CtClass, method: CtMethod): String {
+    private fun buildCacheMethodResult(clazz: CtClass, method: CtMethod): String? {
+        if (method.returnType == CtClass.voidType) return null
         val cachedName = "_\$_cached${method.name.capitalize()}"
         var isStatic = false
 

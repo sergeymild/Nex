@@ -8,16 +8,10 @@ import java.lang.StringBuilder
 
 
 class MainActivity : AppCompatActivity() {
-    @Debounce(1000)
-    fun debo(param: String) {
+    @Memoize
+    fun debo() {
+        println(" parame: ")
 
-    }
-
-
-    @Repeat(every = 2000)
-    fun repeatedMethod(isActive: Boolean) {
-        System.out.println()
-        println("repeat eventy ${System.currentTimeMillis()}")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,7 +23,8 @@ class MainActivity : AppCompatActivity() {
         var url: String? = "http"
         findViewById<View>(R.id.button).setOnClickListener {
             println(index)
-            repeatedMethod(index % 2 == 0)
+            if (index < 2) println(debo())
+            //else println(debo("index: $index"))
             index += 1
         }
     }
