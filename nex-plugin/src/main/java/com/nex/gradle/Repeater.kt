@@ -3,8 +3,10 @@ package com.nex.gradle
 import com.nex.Lazy
 import com.nex.Repeat
 import com.nex.Throttle
-import javassist.*
-import javassist.bytecode.AccessFlag
+import javassist.ClassPool
+import javassist.CtClass
+import javassist.CtMethod
+import javassist.CtNewMethod
 
 class Repeater(
     private val destFolder: String,
@@ -28,8 +30,6 @@ class Repeater(
         if (methodParameters[0] != CtClass.booleanType) {
             error("@Repeat may placed on method where first parameter must be Boolean")
         }
-
-        val handler = clazz.addAndroidHandlerField()
 
         val repeatRunnable = clazz.makeNestedClass("Repeat${method.name.capitalize()}Runnable", true)
         repeatRunnable.addInterface(pool.get("java.lang.Runnable"))
@@ -56,7 +56,7 @@ class Repeater(
         val proxyBody = """{
             if (@0.${repeatRunnableField} != null) {
                 @0.$repeatRunnableField.isActive = false;
-                @0.${handler}.removeCallbacks(@0.$repeatRunnableField);
+                com.nex.Nex.nexUIHandler.removeCallbacks(@0.$repeatRunnableField);
                 @0.$repeatRunnableField.clear();
             }
             if (!@1) {
@@ -70,7 +70,7 @@ class Repeater(
             ${originalMethod.parameterTypes.indicesToString("\n") {
             "@0.${repeatRunnableField}._${it + 1} = @${it + 1};"
         }}            
-            @0.${handler}.postDelayed(@0.$repeatRunnableField, (long)$repeatValue);
+            com.nex.Nex.nexUIHandler.postDelayed(@0.$repeatRunnableField, (long)$repeatValue);
         }""".toJavassist()
 
         clazz.removeMethod(method)
@@ -81,7 +81,7 @@ class Repeater(
             """{
                 if (!isActive) return;
                 $0._super.${originalMethod.name}(${originalMethod.parameterTypes.indicesToString { "\$0._${it + 1}" }});
-                $0._super.$handler.postDelayed($0, (long)$repeatValue);
+                com.nex.Nex.nexUIHandler.postDelayed($0, (long)$repeatValue);
             }""".trimIndent()
         }
 

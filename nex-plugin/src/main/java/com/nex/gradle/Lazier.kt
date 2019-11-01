@@ -1,6 +1,5 @@
 package com.nex.gradle
 
-import com.nex.Lazy
 import com.nex.Memoize
 import com.nex.Throttle
 import javassist.CtClass

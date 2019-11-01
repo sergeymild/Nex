@@ -3,13 +3,21 @@ package com.nex
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
 import java.lang.StringBuilder
 
 
 class MainActivity : AppCompatActivity() {
-    @Memoize
+    @Debounce(1000)
     fun debo() {
+        println(" parame: ")
+
+    }
+
+
+    @MainThread
+    fun repeater(isActive: Boolean) {
         println(" parame: ")
 
     }

@@ -19,10 +19,7 @@ class Debouncer(
     fun debounce() {
         //com.nex.Debounce
         if (method.returnType != CtClass.voidType)
-            error("@${Debounce::class.java.simpleName} may be placed only on method which return void. But in this case: ${clazz.simpleName}.${method.name} return ${method.returnType.simpleName}.")
-
-        //val runnableMethodCall = buildCacheRunnableMethodCall()
-        val handler = clazz.addAndroidHandlerField()
+            error("@Debounce may be placed only on method which return void. But in this case: ${clazz.simpleName}.${method.name} return ${method.returnType.simpleName}.")
 
         val runnableClass = clazz.makeNestedClass("Debounce${method.name.capitalize()}Runnable", true)
         runnableClass.addInterface(pool.get("java.lang.Runnable"))
@@ -46,7 +43,7 @@ class Debouncer(
         runnableClass.addDefaultConstructor()
 
         val proxyBody = """{
-            if (@0.${debounceField} != null) @0.${handler}.removeCallbacks(@0.$debounceField);
+            if (@0.${debounceField} != null) com.nex.Nex.nexUIHandler.removeCallbacks(@0.$debounceField);
             if (@0.${debounceField} == null) {
                 @0.$debounceField = new ${runnableClass.name}();
                 
@@ -55,7 +52,7 @@ class Debouncer(
             ${originalMethod.parameterTypes.indicesToString("\n") {
                 "@0.${debounceField}._${it + 1} = @${it + 1};"
             }}            
-            @0.${handler}.postDelayed(@0.$debounceField, (long)$debounceValue);
+            com.nex.Nex.nexUIHandler.postDelayed(@0.$debounceField, (long)$debounceValue);
         }""".toJavassist()
 
         clazz.removeMethod(method)

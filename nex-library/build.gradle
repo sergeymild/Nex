@@ -5,3 +5,7 @@ plugins {
 
 sourceCompatibility = "8"
 targetCompatibility = "8"
+
+dependencies {
+    compileOnly group: 'com.google.android', name: 'android', version: '4.1.1.4'
+}
