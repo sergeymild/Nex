@@ -10,7 +10,7 @@ import org.gradle.api.Project
 open class NexPlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
-        target.dependencies.add("implementation", "com.nex:nex-library:1.0.15")
+        target.dependencies.add("implementation", "com.nex:nex-library:1.0.16")
 
         val android = target.extensions.findByName("android") as BaseExtension
         android.registerTransform(

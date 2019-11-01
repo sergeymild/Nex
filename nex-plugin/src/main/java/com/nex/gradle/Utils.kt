@@ -145,13 +145,14 @@ fun CtMethod.clearFieldParameters(): String {
 
 fun CtClass.makeNestedRunnableClass(
     className: String,
+    shouldAddSuper: Boolean = true,
     constructorParameters: Array<CtClass>
 ): CtClass {
     val runnable = makeNestedClass(className, true)
     runnable.addInterface(ClassPool.getDefault().get("java.lang.Runnable"))
 
     val params = mutableListOf<CtClass>()
-    params.add(this)
+    if (shouldAddSuper) params.add(this)
     params.addAll(constructorParameters)
 
     params.forEachIndexed { index, ctClass ->
@@ -170,6 +171,7 @@ fun CtClass.makeNestedRunnableClass(
     return runnable
 }
 
+val CtMethod.isStatic: Boolean get() = (methodInfo2.accessFlags and AccessFlag.STATIC) != 0
 
 //val codeAttribute = method.methodInfo2.codeAttribute
 //val iterator = codeAttribute.iterator()

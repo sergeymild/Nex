@@ -18,20 +18,24 @@ class AndroidAnnotationsHandler(
     fun wrapInMainThreadCall() {
         val originalMethod = CtNewMethod.copy(method, clazz, null)
         originalMethod.name = "${method.name}MainThreadCall$$"
-        val originalMethodParameters = method.parameterTypes.indicesToString { "\$0._${it + 2}" }
+        // if method is static, don't need pass this as first parameter
+        val incrementIndex = if (originalMethod.isStatic) 1 else 2
+        val originalMethodParameters = method.parameterTypes.indicesToString { "\$0._${it + incrementIndex}" }
 
         val proxyMethod = CtNewMethod.copy(method, clazz, null)
 
 
         val repeatRunnable = clazz.makeNestedRunnableClass(
             className = "MainThreadCall${method.name.capitalize()}Runnable",
+            shouldAddSuper = !originalMethod.isStatic,
             constructorParameters = originalMethod.parameterTypes)
 
+        val params = if (originalMethod.isStatic) "@@" else "@0, @@"
         val proxyBody = """{
             if (android.os.Looper.getMainLooper() == android.os.Looper.myLooper()) {
                 ${originalMethod.name}(@@);
             } else {
-                com.nex.Nex.nexUIHandler.post(new ${repeatRunnable.name}(@0, @@));
+                com.nex.Nex.nexUIHandler.post(new ${repeatRunnable.name}($params));
             }
         }""".toJavassist()
 
@@ -40,9 +44,17 @@ class AndroidAnnotationsHandler(
         clazz.addMethod(proxyMethod)
 
         val runMethod = repeatRunnable.makeMethod("run") {
-            add("\$0._1.${originalMethod.name}($originalMethodParameters);")
-            add("\$0._1 = null;")
-            add(originalMethod.clearFieldParameters())
+            if (originalMethod.isStatic) {
+                add("${clazz.name}.${originalMethod.name}($originalMethodParameters);")
+            } else {
+                add("\$0._1.${originalMethod.name}($originalMethodParameters);")
+                add("\$0._1 = null;")
+            }
+            add(
+                originalMethod.parameterTypes
+                    .filter { !it.isPrimitive }
+                    .indicesToString("\n") { "\$0._${it + incrementIndex} = null;" }
+            )
         }
 
         repeatRunnable.addMethod(runMethod)
