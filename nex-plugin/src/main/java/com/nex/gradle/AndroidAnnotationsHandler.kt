@@ -18,6 +18,8 @@ class AndroidAnnotationsHandler(
 ) {
 
     fun wrapInMainThreadCall() {
+        if (method.returnType != CtClass.voidType)
+            error("@UiThread ${clazz.simpleName}.${method.name} cannot be placed on method witch has a return type")
         val originalMethod = CtNewMethod.copy(method, clazz, null)
         originalMethod.name = "${method.name}MainThreadCall$$"
         // if method is static, don't need pass this as first parameter
