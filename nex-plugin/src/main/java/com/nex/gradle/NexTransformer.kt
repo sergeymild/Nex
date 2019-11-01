@@ -1,5 +1,6 @@
 package com.nex.gradle
 
+import androidx.annotation.MainThread
 import com.android.build.api.transform.*
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.pipeline.TransformManager
@@ -187,6 +188,10 @@ class NexTransformer(private val project: Project) : Transform() {
             if (method.hasAnnotation(Debounce::class.java.canonicalName)) {
                 println("Nex: debounce: ${clazz.simpleName}.${method.name}")
                 Debouncer(destFolder, pool, clazz, method).debounce()
+            }
+
+            if (method.hasAnnotation(MainThread::class.java)) {
+                AndroidAnnotationsHandler(destFolder, clazz, method).wrapInMainThreadCall()
             }
         }
     }

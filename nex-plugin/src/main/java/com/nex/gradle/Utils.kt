@@ -62,6 +62,25 @@ inline fun CtClass.newMethod(
     )
 }
 
+inline fun CtClass.makeMethod(
+    name: String,
+    returnType: CtClass = CtClass.voidType,
+    body: MutableList<String>.() -> Unit): CtMethod {
+
+    val bodyList = mutableListOf<String>()
+    body.invoke(bodyList)
+    val bodyString = bodyList.joinToString("\n", prefix = "{", postfix = "}")
+
+    return CtNewMethod.make(
+        returnType,
+        name,
+        emptyArray(),
+        emptyArray(),
+        bodyString,
+        this
+    )
+}
+
 fun CtClass.addPublicField(type: CtClass, name: String): CtField {
     return CtField(type, name, this).also {
         it.modifiers = AccessFlag.PUBLIC
@@ -114,6 +133,41 @@ fun defaultValue(method: CtMethod): String {
 
 fun <T> CtMethod.annotation(type: Class<T>) : T {
     return getAnnotation(type) as T
+}
+
+fun CtMethod.getParametersForMethodInvoke(): String {
+    return parameterTypes.indicesToString { "\$0._${it + 1}" }
+}
+
+fun CtMethod.clearFieldParameters(): String {
+    return parameterTypes.filter { !it.isPrimitive }.indicesToString("\n") { "\$0._${it + 1} = null;" }
+}
+
+fun CtClass.makeNestedRunnableClass(
+    className: String,
+    constructorParameters: Array<CtClass>
+): CtClass {
+    val runnable = makeNestedClass(className, true)
+    runnable.addInterface(ClassPool.getDefault().get("java.lang.Runnable"))
+
+    val params = mutableListOf<CtClass>()
+    params.add(this)
+    params.addAll(constructorParameters)
+
+    params.forEachIndexed { index, ctClass ->
+        runnable.addPublicField(ctClass, "_${index + 1}")
+    }
+
+    runnable.addConstructor(CtNewConstructor.make(
+        params.toTypedArray(),
+        emptyArray(),
+        """
+            {${params.indicesToString("\n") { index -> "_${index + 1} = @${index + 1};" }}}
+        """.toJavassist(),
+        runnable
+    ))
+
+    return runnable
 }
 
 

@@ -40,7 +40,7 @@ class Repeater(
         val repeatValue = method.annotation(Repeat::class.java).every
 
         val originalMethod = CtNewMethod.copy(method, clazz, null)
-        originalMethod.name = "${method.name}\$\$"
+        originalMethod.name = "${method.name}$$"
 
         val proxyMethod = CtNewMethod.copy(method, clazz, null)
 
