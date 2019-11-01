@@ -26,7 +26,7 @@ class AndroidAnnotationsHandler(
 
 
         val repeatRunnable = clazz.makeNestedRunnableClass(
-            className = "MainThreadCall${method.name.capitalize()}Runnable",
+            className = "MainThreadCall${method.uniqueName()}Runnable",
             shouldAddSuper = !originalMethod.isStatic,
             constructorParameters = originalMethod.parameterTypes)
 

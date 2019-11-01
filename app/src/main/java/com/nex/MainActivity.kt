@@ -18,6 +18,15 @@ fun Context.toast(@StringRes value: Int, duration: Int = Toast.LENGTH_LONG) {
 
 class MainActivity : AppCompatActivity() {
 
+    @MainThread
+    fun list(one: String) {
+        println(one)
+    }
+
+    @MainThread
+    fun list(one: Int) {
+        println(one)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +40,8 @@ class MainActivity : AppCompatActivity() {
 
 
             Thread {
-                applicationContext.toast(R.string.app_name)
+                list("st4r")
+                list(1)
             }.start()
 
         }

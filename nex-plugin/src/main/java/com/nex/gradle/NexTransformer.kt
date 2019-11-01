@@ -32,29 +32,35 @@ class NexTransformer(private val project: Project) : Transform() {
         mutableSetOf(QualifiedContent.Scope.EXTERNAL_LIBRARIES, QualifiedContent.Scope.SUB_PROJECTS)
 
     override fun transform(transformInvocation: TransformInvocation) {
-        val result = measureTimeMillis {
-            val pool = ClassPool()
+        try {
+            println("--> start transform: ${transformInvocation.context.projectName}")
+            val result = measureTimeMillis {
+                val pool = ClassPool()
 
-            fillPoolAndroidInputs(pool)
-            fillPoolReferencedInputs(transformInvocation, pool)
-            fillPoolInputs(transformInvocation, pool)
+                fillPoolAndroidInputs(pool)
+                fillPoolReferencedInputs(transformInvocation, pool)
+                fillPoolInputs(transformInvocation, pool)
 
-            if (!transformInvocation.isIncremental) {
-                transformInvocation.outputProvider.deleteAll()
-            }
-
-            transformInvocation.inputs.forEach { transformInput ->
-                transformInput.directoryInputs.forEach { directoryInput ->
-                    transformDirectoryInputs(pool, directoryInput, transformInvocation)
+                if (!transformInvocation.isIncremental) {
+                    transformInvocation.outputProvider.deleteAll()
                 }
 
+                transformInvocation.inputs.forEach { transformInput ->
+                    transformInput.directoryInputs.forEach { directoryInput ->
+                        transformDirectoryInputs(pool, directoryInput, transformInvocation)
+                    }
 
-                transformInput.jarInputs.forEach { jarInput ->
-                    copyJarInputs(jarInput, transformInvocation)
+
+                    transformInput.jarInputs.forEach { jarInput ->
+                        copyJarInputs(jarInput, transformInvocation)
+                    }
                 }
             }
+            println("-> Processing time: $result")
+        } catch (e: Throwable) {
+            println("-> catch: ${e.message}")
+            throw e
         }
-        println("-> Processing time: $result")
     }
 
     private fun fillPoolAndroidInputs(classPool: ClassPool) {
@@ -85,7 +91,7 @@ class NexTransformer(private val project: Project) : Transform() {
             }
         }
 
-        classPool.appendClassPath(LoaderClassPath(Nex::class.java.classLoader))
+        //classPool.appendClassPath(LoaderClassPath(Nex::class.java.classLoader))
     }
 
     private fun copyJarInputs(jarInput: JarInput, transformInvocation: TransformInvocation) {
@@ -196,10 +202,12 @@ class NexTransformer(private val project: Project) : Transform() {
             }
 
             if (method.hasAnnotation(MainThread::class.java) || method.hasAnnotation(UiThread::class.java)) {
+                println("Nex: MainThread: ${clazz.simpleName}.${method.name}")
                 AndroidAnnotationsHandler(pool, destFolder, clazz, method).wrapInMainThreadCall()
             }
 
             if (method.hasAnnotation(WorkerThread::class.java)) {
+                println("Nex: WorkerThread: ${clazz.simpleName}.${method.name}")
                 AndroidAnnotationsHandler(pool, destFolder, clazz, method).checkWorkerThread()
             }
         }
