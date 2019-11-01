@@ -1,12 +1,16 @@
 package com.nex.gradle
 
 import androidx.annotation.MainThread
+import androidx.annotation.UiThread
+import androidx.annotation.WorkerThread
 import com.android.build.api.transform.*
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.pipeline.TransformManager
 import com.nex.*
+import javassist.ClassPath
 import javassist.ClassPool
 import javassist.CtClass
+import javassist.LoaderClassPath
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Project
 import java.io.File
@@ -80,6 +84,8 @@ class NexTransformer(private val project: Project) : Transform() {
                 classPool.appendClassPath(jarInput.file.absolutePath)
             }
         }
+
+        classPool.appendClassPath(LoaderClassPath(Nex::class.java.classLoader))
     }
 
     private fun copyJarInputs(jarInput: JarInput, transformInvocation: TransformInvocation) {
@@ -106,7 +112,6 @@ class NexTransformer(private val project: Project) : Transform() {
 
         if (transformInvocation.isIncremental) {
             for (entry in inputDirectory.changedFiles) {
-                println("--> ${entry.value}: ${entry.key.name}")
                 if (entry.value == Status.NOTCHANGED) {
                     entry.key.relativeTo(inputDirectory.file)
                         .copyTo(File("${destFolder.absolutePath}/${entry.key.name}"))
@@ -190,8 +195,12 @@ class NexTransformer(private val project: Project) : Transform() {
                 Debouncer(destFolder, pool, clazz, method).debounce()
             }
 
-            if (method.hasAnnotation(MainThread::class.java)) {
-                AndroidAnnotationsHandler(destFolder, clazz, method).wrapInMainThreadCall()
+            if (method.hasAnnotation(MainThread::class.java) || method.hasAnnotation(UiThread::class.java)) {
+                AndroidAnnotationsHandler(pool, destFolder, clazz, method).wrapInMainThreadCall()
+            }
+
+            if (method.hasAnnotation(WorkerThread::class.java)) {
+                AndroidAnnotationsHandler(pool, destFolder, clazz, method).checkWorkerThread()
             }
         }
     }

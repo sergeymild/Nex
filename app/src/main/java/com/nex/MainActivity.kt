@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import androidx.annotation.MainThread
+import androidx.annotation.WorkerThread
 import androidx.appcompat.app.AppCompatActivity
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -18,15 +18,21 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    @WorkerThread
+    fun wo() {
+        println("rehrehreh")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
 
+
         var index = 0
         var url: String? = "http"
         findViewById<View>(R.id.button).setOnClickListener {
-
+            wo()
             Thread {
                 repeater(true, "dsds", 23)
             }.start()

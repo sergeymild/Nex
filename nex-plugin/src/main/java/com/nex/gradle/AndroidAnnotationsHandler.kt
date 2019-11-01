@@ -1,5 +1,6 @@
 package com.nex.gradle
 
+import javassist.ClassPool
 import javassist.CtClass
 import javassist.CtMethod
 import javassist.CtNewMethod
@@ -8,6 +9,7 @@ import javassist.CtNewMethod
  *  Throttling enforces a maximum number of times a function can be called over time.
  * */
 class AndroidAnnotationsHandler(
+    private val pool: ClassPool,
     private val destFolder: String,
     private val clazz: CtClass,
     private val method: CtMethod
@@ -46,5 +48,14 @@ class AndroidAnnotationsHandler(
         repeatRunnable.addMethod(runMethod)
         proxyMethod.setBody(proxyBody)
         repeatRunnable.writeFile(destFolder)
+    }
+
+
+    fun checkWorkerThread() {
+        method.insertBefore("""
+            if (android.os.Looper.getMainLooper() == android.os.Looper.myLooper()) {
+                throw new IllegalStateException("${clazz.simpleName}.${method.name} must be called only from Main Thread.");
+            }
+        """.toJavassist())
     }
 }
