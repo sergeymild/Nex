@@ -174,7 +174,7 @@ fun CtClass.makeNestedRunnableClass(
 val CtMethod.isStatic: Boolean get() = (methodInfo2.accessFlags and AccessFlag.STATIC) != 0
 
 fun CtMethod.uniqueName(): String {
-    val joinedParams = parameterTypes.joinToString("") { it.name.capitalize() }
+    val joinedParams = parameterTypes.joinToString("") { it.simpleName.capitalize() }
     return "${name.capitalize()}$joinedParams"
 }
 

@@ -11,12 +11,11 @@ import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
 import androidx.appcompat.app.AppCompatActivity
 
-@UiThread
-fun Context.toast(@StringRes value: Int, duration: Int = Toast.LENGTH_LONG) {
-    Toast.makeText(this, value, duration).show()
-}
+class Re
 
 class MainActivity : AppCompatActivity() {
+
+    var url: String? = "http"
 
     @MainThread
     fun list(one: String) {
@@ -24,7 +23,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     @MainThread
-    fun list(one: Int) {
+    fun list(one: Int, re: Re) {
         println(one)
     }
 
@@ -35,15 +34,10 @@ class MainActivity : AppCompatActivity() {
 
 
         var index = 0
-        var url: String? = "http"
+
         findViewById<View>(R.id.button).setOnClickListener {
 
-
-            Thread {
-                list("st4r")
-                list(1)
-            }.start()
-
+            println(url)
         }
     }
 }

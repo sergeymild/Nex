@@ -4,6 +4,8 @@ import javassist.ClassPool
 import javassist.CtClass
 import javassist.CtMethod
 import javassist.CtNewMethod
+import org.gradle.internal.impldep.org.apache.commons.lang.text.StrBuilder
+import java.lang.StringBuilder
 
 /**
  *  Throttling enforces a maximum number of times a function can be called over time.
@@ -23,7 +25,6 @@ class AndroidAnnotationsHandler(
         val originalMethodParameters = method.parameterTypes.indicesToString { "\$0._${it + incrementIndex}" }
 
         val proxyMethod = CtNewMethod.copy(method, clazz, null)
-
 
         val repeatRunnable = clazz.makeNestedRunnableClass(
             className = "MainThreadCall${method.uniqueName()}Runnable",
@@ -50,11 +51,14 @@ class AndroidAnnotationsHandler(
                 add("\$0._1.${originalMethod.name}($originalMethodParameters);")
                 add("\$0._1 = null;")
             }
-            add(
-                originalMethod.parameterTypes
-                    .filter { !it.isPrimitive }
-                    .indicesToString("\n") { "\$0._${it + incrementIndex} = null;" }
-            )
+
+            val stringBuilder = StringBuilder()
+            originalMethod.parameterTypes.forEachIndexed { index, ctClass ->
+                if (!ctClass.isPrimitive) {
+                    stringBuilder.append("\$0._${index + incrementIndex} = null;\n")
+                }
+            }
+            add(stringBuilder.toString())
         }
 
         repeatRunnable.addMethod(runMethod)
