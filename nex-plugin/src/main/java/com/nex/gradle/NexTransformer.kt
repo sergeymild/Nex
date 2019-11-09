@@ -7,10 +7,8 @@ import com.android.build.api.transform.*
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.pipeline.TransformManager
 import com.nex.*
-import javassist.ClassPath
 import javassist.ClassPool
 import javassist.CtClass
-import javassist.LoaderClassPath
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Project
 import java.io.File
@@ -33,7 +31,9 @@ class NexTransformer(private val project: Project) : Transform() {
 
     override fun transform(transformInvocation: TransformInvocation) {
         try {
-            println("--> start transform: ${transformInvocation.context.projectName}")
+            try {
+                println("--> start transform: ${transformInvocation.context.projectName}")
+            } catch (e: Throwable) {}
             val result = measureTimeMillis {
                 val pool = ClassPool()
 
@@ -171,9 +171,6 @@ class NexTransformer(private val project: Project) : Transform() {
 
 
         for (method in clazz.declaredMethods) {
-            if (method.hasAnnotation(Log::class.java.canonicalName)) {
-                Loggerizer(clazz, method).loggerize()
-            }
             if (method.isEmpty) continue
 
             if (method.hasAnnotation(Memoize::class.java.canonicalName)) {

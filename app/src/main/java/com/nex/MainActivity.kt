@@ -4,12 +4,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.Toast
-import androidx.annotation.MainThread
-import androidx.annotation.StringRes
 import androidx.annotation.UiThread
-import androidx.annotation.WorkerThread
 import androidx.appcompat.app.AppCompatActivity
 
 @UiThread
@@ -29,6 +24,7 @@ private fun Context.getTextFromClipboard(): String? {
 class MainActivity : AppCompatActivity() {
 
     var url: String? = "http"
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
