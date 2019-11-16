@@ -1,5 +1,6 @@
 package com.nex.gradle
 
+import android.annotation.TargetApi
 import androidx.annotation.MainThread
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
@@ -206,6 +207,11 @@ class NexTransformer(private val project: Project) : Transform() {
             if (method.hasAnnotation(WorkerThread::class.java)) {
                 println("Nex: WorkerThread: ${clazz.simpleName}.${method.name}")
                 AndroidAnnotationsHandler(pool, destFolder, clazz, method).checkWorkerThread()
+            }
+
+            if (method.hasAnnotation(TargetApi::class.java)) {
+                println("Nex: TargetApi: ${clazz.simpleName}.${method.name}")
+                AndroidAnnotationsHandler(pool, destFolder, clazz, method).wrapInTargetApiCall()
             }
         }
     }

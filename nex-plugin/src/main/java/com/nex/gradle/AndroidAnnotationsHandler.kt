@@ -1,11 +1,10 @@
 package com.nex.gradle
 
+import android.annotation.TargetApi
 import javassist.ClassPool
 import javassist.CtClass
 import javassist.CtMethod
 import javassist.CtNewMethod
-import org.gradle.internal.impldep.org.apache.commons.lang.text.StrBuilder
-import java.lang.StringBuilder
 
 /**
  *  Throttling enforces a maximum number of times a function can be called over time.
@@ -74,6 +73,13 @@ class AndroidAnnotationsHandler(
             if (android.os.Looper.getMainLooper() == android.os.Looper.myLooper()) {
                 throw new IllegalStateException("${clazz.simpleName}.${method.name} must be called only from Main Thread.");
             }
+        """.toJavassist())
+    }
+
+    fun wrapInTargetApiCall() {
+        val targetApi = method.annotation(TargetApi::class.java).value
+        method.insertBefore("""
+            if (android.os.Build.VERSION.SDK_INT < $targetApi) return;
         """.toJavassist())
     }
 }
