@@ -16,10 +16,13 @@ class MainActivity : AppCompatActivity() {
     var url: String? = "http"
 
 
-    @TargetApi(Build.VERSION_CODES.O)
+    @Subscribe("d")
+    @UiThread
     fun debuggableMethod() {
         println("-")
     }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

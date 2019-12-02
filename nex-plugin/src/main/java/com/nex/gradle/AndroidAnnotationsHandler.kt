@@ -5,6 +5,8 @@ import javassist.ClassPool
 import javassist.CtClass
 import javassist.CtMethod
 import javassist.CtNewMethod
+import javassist.bytecode.AttributeInfo
+
 
 /**
  *  Throttling enforces a maximum number of times a function can be called over time.
@@ -26,6 +28,9 @@ class AndroidAnnotationsHandler(
         val originalMethodParameters = method.parameterTypes.indicesToString { "\$0._${it + incrementIndex}" }
 
         val proxyMethod = CtNewMethod.copy(method, clazz, null)
+        for (attribute in method.methodInfo.attributes) {
+            proxyMethod.methodInfo.addAttribute(attribute as AttributeInfo)
+        }
 
         val repeatRunnable = clazz.makeNestedRunnableClass(
             className = "MainThreadCall${method.uniqueName()}Runnable",
