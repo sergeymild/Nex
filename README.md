@@ -5,7 +5,7 @@ Add it in your root build.gradle in buildscript block:
 ```
 buildscript {
   repositories {
-    maven { url uri('https://raw.githubusercontent.com/sergeymild/nex/master/repo/') }
+    maven { url uri('https://raw.githubusercontent.com/sergeymild/nex/1.0.17/repo/') }
   }
   
   dependencies {
@@ -16,7 +16,7 @@ buildscript {
 subprojects {
     repositories {
         maven {
-            url uri('https://raw.githubusercontent.com/sergeymild/nex/master/repo/')
+            url uri('https://raw.githubusercontent.com/sergeymild/nex/1.0.17/repo/')
         }
     }
 }
